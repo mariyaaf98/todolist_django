@@ -1,23 +1,42 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <form action="{% url 'add_task' %}" method="POST">
+    <h1>📝 ToDo List</h1>
+
+    <form method="POST" action="{% if edit_task %}{% url 'edit_task' edit_task.id %}{% else %}{% url 'add_task' %}{% endif %}">
         {% csrf_token %}
-        <input type="text" placeholder="Enter Task" name="title">
-        <button type="submit">Add</button>
+        <input type="text" name="title" placeholder="Enter Task" value="{% if edit_task %}{{ edit_task.title }}{% endif %}">
+        <button type="submit">{% if edit_task %}Update{% else %}Add{% endif %}</button>
+        {% if edit_task %}
+            <a href="{% url 'task_list' %}" class="btn btn-danger">Cancel</a>
+        {% endif %}
     </form>
+
     <ul>
         {% for task in tasks %}
             <li>
-                {{task}}
+                <div style="display: flex; align-items: center;">
+                    <form method="POST" action="{% url 'complete_task' task.id %}">
+                        {% csrf_token %}
+                        <input type="checkbox" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
+                    </form>
+                    <span class="task-title {% if task.completed %}completed{% endif %}">{{ task.title }}</span>
+                </div>
+                <div class="right-actions">
+                    <a href="{% url 'edit_task' task.id %}" class="btn">Edit</a>
+                    <a href="{% url 'delete_task' task.id %}" class="btn btn-danger">Delete</a>
+                </div>
             </li>
-        {%endfor%}
-
+        {% endfor %}
     </ul>
 </body>
+
 </html>
